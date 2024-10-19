@@ -1,12 +1,12 @@
 package com.example.Barun.BlogWebApp.repo;
 
-import com.example.Barun.BlogWebApp.model.User;
+import com.example.Barun.BlogWebApp.model.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import java.util.List;
 
 @Repository
-public interface CommentRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUsername(String username);
+public interface CommentRepository extends JpaRepository<Comment, Integer> {
+    List<Comment> findByBlogId(int blogId);
 }
