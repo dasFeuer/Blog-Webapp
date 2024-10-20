@@ -1,6 +1,5 @@
 package com.example.Barun.BlogWebApp.service;
 
-import com.example.Barun.BlogWebApp.model.User;
 import com.example.Barun.BlogWebApp.model.UserPrincipal;
 import com.example.Barun.BlogWebApp.repo.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +17,13 @@ public class MyUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         System.out.println("Attempting to load user: " + username);
-        User user = userRepository.findByUsername(username);
 
-        if(user == null) {
-            System.out.println("User Not Found with username: " + username);
-            throw new UsernameNotFoundException("User not found");
-        }
-        return new UserPrincipal(user);
+        return userRepository.findByUsername(username)
+                .map(UserPrincipal::new)
+                .orElseThrow(() -> {
+                    System.out.println("User Not Found with username: " + username);
+                    return new UsernameNotFoundException("User not found");
+                });
     }
+
 }

@@ -1,10 +1,13 @@
 package com.example.Barun.BlogWebApp.controller;
 
+import com.example.Barun.BlogWebApp.model.LoginRequest;
 import com.example.Barun.BlogWebApp.model.User;
 import com.example.Barun.BlogWebApp.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,10 +33,33 @@ public class UserController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User createdUser = userService.createUser(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+    @PostMapping("/register")
+    public ResponseEntity<?> createUser(@Valid @RequestBody User user) {
+        try {
+            User createdUser = userService.createUser(user);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        } catch (RuntimeException e) {
+            // Handle specific exceptions based on their messages
+            if ("Username already taken".equals(e.getMessage())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already taken");
+            } else if ("Email already taken".equals(e.getMessage())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already taken");
+            } else {
+                // For other RuntimeExceptions
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+            }
+        }
+    }
+
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
+        try {
+            String token = userService.authenticateAndGenerateToken(loginRequest.getUsername(), loginRequest.getPassword());
+            return ResponseEntity.ok(token);
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
     }
 
     @PutMapping("/{id}")
