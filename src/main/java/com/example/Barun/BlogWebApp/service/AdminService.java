@@ -11,11 +11,14 @@ public class AdminService {
     @Autowired
     private UserRepository userRepository;
 
+    private static final String ROLE_ADMIN = "ADMIN";
+    private static final String ROLE_USER = "USER";
+
     public User promoteToAdmin(int userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setRole("ADMIN");
+        user.setRole(ROLE_ADMIN);
         return userRepository.save(user);
     }
 
@@ -23,7 +26,7 @@ public class AdminService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setRole("USER");
+        user.setRole(ROLE_USER);
         return userRepository.save(user);
     }
 

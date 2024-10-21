@@ -1,11 +1,13 @@
 package com.example.Barun.BlogWebApp.service;
 
 import com.example.Barun.BlogWebApp.model.User;
+import com.example.Barun.BlogWebApp.model.UserPrincipal;
 import com.example.Barun.BlogWebApp.repo.UserRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,6 +19,8 @@ import java.util.Optional;
 
 @Service
 public class UserService {
+    private static final String ROLE_ADMIN = "ADMIN";
+    private static final String ROLE_USER = "USER";
 
     @Autowired
     private UserRepository userRepository;
@@ -42,6 +46,7 @@ public class UserService {
 
     @PostConstruct
     public void initAdminUser(){
+        System.out.println("Initializing admin user");
         if(!userRepository.findByEmail(adminEmail).isPresent()){
             User adminUser = new User();
             adminUser.setUsername(adminUsername);
@@ -49,9 +54,12 @@ public class UserService {
             adminUser.setPassword(passwordEncoder.encode(adminPassword));
             adminUser.setRole("ADMIN");
             userRepository.save(adminUser);
-
+            System.out.println("Admin user created: " + adminUser.getUsername());
+        } else {
+            System.out.println("Admin user already exists");
         }
     }
+
     public List<User> getAllUsers(){
         return userRepository.findAll();
     }
@@ -75,22 +83,19 @@ public class UserService {
         if(isUsernameTaken(user.getUsername())) {
             throw new RuntimeException("Username already taken");
         }
-        user.setRole("USER");
+        user.setRole(ROLE_USER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
-    public User updateUser(int id, User updatedUser){
-        Optional<User> existingUser = userRepository.findById(id);
-        if(existingUser.isPresent()){
-            User user = existingUser.get();
-            user.setUsername(updatedUser.getUsername());
-            user.setEmail(updatedUser.getEmail());
-            user.setRole(updatedUser.getRole());
-            return userRepository.save(user);
-        } else {
-            throw new RuntimeException("User not found");
-        }
+    public User updateUser(int id, User updatedUser) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setUsername(updatedUser.getUsername());
+        user.setEmail(updatedUser.getEmail());
+        user.setRole(updatedUser.getRole());
+        return userRepository.save(user);
     }
 
     public void deleteUser(int id){
@@ -107,10 +112,15 @@ public class UserService {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, password)
             );
-            User user = (User) authentication.getPrincipal();
-            return jwtService.generateToken(user.getUsername());
-        } catch (Exception e){
+            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+            return jwtService.generateToken(userPrincipal.getUsername());
+        } catch (UsernameNotFoundException e) {
+            throw e;
+        } catch (BadCredentialsException e) {
             throw new UsernameNotFoundException("Invalid Credentials");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Authentication failed");
         }
     }
 }
