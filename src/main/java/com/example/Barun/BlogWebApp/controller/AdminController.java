@@ -5,6 +5,7 @@ import com.example.Barun.BlogWebApp.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,6 +15,7 @@ public class AdminController {
     @Autowired
     private AdminService adminService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/promote/{userId}")
     public ResponseEntity<User> promoteToAdmin(@PathVariable int userId) {
         try{
@@ -24,6 +26,7 @@ public class AdminController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/demote/{userId}")
     public ResponseEntity<User> demoteToUser(@PathVariable int userId) {
         try{
@@ -34,6 +37,7 @@ public class AdminController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete/{userId}")
     public ResponseEntity<String> deleteUser(@PathVariable int userId){
         try{

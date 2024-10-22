@@ -1,5 +1,6 @@
 package com.example.Barun.BlogWebApp.service;
 
+import com.example.Barun.BlogWebApp.exception.BlogNotFoundException;
 import com.example.Barun.BlogWebApp.model.Blog;
 import com.example.Barun.BlogWebApp.model.User;
 import com.example.Barun.BlogWebApp.repo.BlogRepository;
@@ -34,19 +35,17 @@ public class BlogService {
     }
 
     public Optional<Blog> getBlogById(int id) {
-        return blogRepository.findById(id);
+        return Optional.ofNullable(blogRepository.findById(id)
+                .orElseThrow(() -> new BlogNotFoundException("Blog with ID " + id + " not found")));
     }
 
     public Blog updateBlog(int id, Blog updatedBlog) {
-        Optional<Blog> existingBlog = blogRepository.findById(id);
-        if (existingBlog.isPresent()) {
-            Blog blog = existingBlog.get();
-            blog.setTitle(updatedBlog.getTitle());
-            blog.setContent(updatedBlog.getContent());
-            return blogRepository.save(blog);
-        } else {
-            throw new RuntimeException("Blog not found");
-        }
+        Blog existingBlog = blogRepository.findById(id)
+                .orElseThrow(() -> new BlogNotFoundException("Blog with ID " + id + " not found"));
+
+        existingBlog.setTitle(updatedBlog.getTitle());
+        existingBlog.setContent(updatedBlog.getContent());
+        return blogRepository.save(existingBlog);
     }
 
     public void deleteBlog(int id) {

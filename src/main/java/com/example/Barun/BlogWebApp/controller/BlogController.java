@@ -2,11 +2,19 @@ package com.example.Barun.BlogWebApp.controller;
 
 import com.example.Barun.BlogWebApp.model.Blog;
 import com.example.Barun.BlogWebApp.service.BlogService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 @RestController
@@ -35,6 +43,7 @@ public class BlogController {
                 .orElse(ResponseEntity.noContent().build());
     }
 
+    @Transactional
     @PutMapping("/{id}")
     public ResponseEntity<Blog> updateBlog(@PathVariable int id, @RequestBody Blog updatedBlog){
         try{
@@ -58,4 +67,16 @@ public class BlogController {
         return ResponseEntity.ok(blogs);
     }
 
+    @PostMapping("/upload")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String uploadFile(MultipartFile file) {
+        try {
+            String uploadDir = "C:\\Users\\Acer\\Desktop\\MediaUpload";  // Define your upload directory
+            Path path = Paths.get(uploadDir + file.getOriginalFilename());
+            Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+            return path.toString();
+        } catch (IOException e) {
+            throw new RuntimeException("Error uploading file", e);
+        }
+    }
 }
