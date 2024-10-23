@@ -55,7 +55,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
         try {
-            String token = userService.authenticateAndGenerateToken(loginRequest.getUsername(), loginRequest.getPassword());
+            String token = userService.authenticateAndGenerateToken(loginRequest.getUsernameOrEmail(), loginRequest.getPassword());
             return ResponseEntity.ok(token);
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");

@@ -5,22 +5,22 @@ import jakarta.validation.constraints.NotBlank;
 public class LoginRequest {
 
     @NotBlank
-    private String username;
+    private String usernameOrEmail;
 
     @NotBlank
     private String password;
 
-    public LoginRequest(String username, String password) {
-        this.username = username;
+    public LoginRequest(String usernameOrEmail, String password) {
+        this.usernameOrEmail = usernameOrEmail;
         this.password = password;
     }
 
-    public @NotBlank String getUsername() {
-        return username;
+    public @NotBlank String getUsernameOrEmail() {
+        return usernameOrEmail;
     }
 
-    public void setUsername(@NotBlank String username) {
-        this.username = username;
+    public void setUsernameOrEmail(@NotBlank String usernameOrEmail) {
+        this.usernameOrEmail = usernameOrEmail;
     }
 
     public @NotBlank String getPassword() {

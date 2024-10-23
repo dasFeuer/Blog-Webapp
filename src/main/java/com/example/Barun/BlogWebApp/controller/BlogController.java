@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -69,14 +70,14 @@ public class BlogController {
 
     @PostMapping("/upload")
     @PreAuthorize("hasRole('ADMIN')")
-    public String uploadFile(MultipartFile file) {
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
-            String uploadDir = "C:\\Users\\Acer\\Desktop\\MediaUpload";  // Define your upload directory
-            Path path = Paths.get(uploadDir + file.getOriginalFilename());
+            String uploadDir = "C:\\Users\\Acer\\Desktop\\MediaUpload";
+            Path path = Paths.get(uploadDir + File.separator + file.getOriginalFilename());
             Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-            return path.toString();
+            return ResponseEntity.ok(path.toString());
         } catch (IOException e) {
-            throw new RuntimeException("Error uploading file", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading file: " + e.getMessage());
         }
     }
 }

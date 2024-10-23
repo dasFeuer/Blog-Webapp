@@ -52,7 +52,7 @@ public class UserService {
             adminUser.setUsername(adminUsername);
             adminUser.setEmail(adminEmail);
             adminUser.setPassword(passwordEncoder.encode(adminPassword));
-            adminUser.setRole("ADMIN");
+            adminUser.setRole(ROLE_ADMIN);
             userRepository.save(adminUser);
             System.out.println("Admin user created: " + adminUser.getUsername());
         } else {
@@ -107,10 +107,19 @@ public class UserService {
         }
     }
 
-    public String authenticateAndGenerateToken(String username, String password){
+    public String authenticateAndGenerateToken(String usernameOrEmail, String password){
         try{
+            Optional<User> userOptional = userRepository.findByUsername(usernameOrEmail)
+                    .or(() -> userRepository.findByEmail(usernameOrEmail));
+
+            if(userOptional.isEmpty()) {
+                throw new UsernameNotFoundException("User not found with username or email: " + usernameOrEmail);
+            }
+
+            User user = userOptional.get();
+
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
+                    new UsernamePasswordAuthenticationToken(user.getUsername(), password)
             );
             UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
             return jwtService.generateToken(userPrincipal.getUsername());
