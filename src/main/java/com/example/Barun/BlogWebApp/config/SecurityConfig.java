@@ -36,7 +36,7 @@ public class SecurityConfig {
 //                        .requestMatchers("/", "/oauth2/**").permitAll()
                         .requestMatchers("/api/users/**").permitAll()
                         .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers("/api/blogs/**", "/api/comments/**").hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers("/api/blogs/**", "/api/comments/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(Customizer.withDefaults())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

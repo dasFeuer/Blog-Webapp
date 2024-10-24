@@ -24,8 +24,11 @@ public class BlogService {
         Optional<User> user = userRepository.findById(userId);
         if(user.isPresent()){
             blog.setUser(user.get());
-            return blogRepository.save(blog);
+            Blog savedBlog = blogRepository.save(blog);
+            System.out.println("Blog created: " + savedBlog);
+            return savedBlog;
         } else {
+            System.out.println("User with ID " + userId + " not found");
             throw new RuntimeException("User not found");
         }
     }
