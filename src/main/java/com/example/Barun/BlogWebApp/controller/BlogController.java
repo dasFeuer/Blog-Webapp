@@ -39,11 +39,15 @@ public class BlogController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.getFieldErrors());
         }
         try {
+            System.out.println("Creating blog for user ID: " + blogRequest.getUserId());
             Blog createdBlog = blogService.createBlog(blogRequest.getUserId(), blogRequest.getBlog());
+            System.out.println("Blog created: " + createdBlog);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdBlog);
         } catch (RuntimeException e) {
+            System.out.println("Runtime exception: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
+            System.out.println("Exception occurred: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating blog: " + e.getMessage());
         }
     }

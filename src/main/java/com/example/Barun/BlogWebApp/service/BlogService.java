@@ -1,6 +1,7 @@
 package com.example.Barun.BlogWebApp.service;
 
 import com.example.Barun.BlogWebApp.exception.BlogNotFoundException;
+import com.example.Barun.BlogWebApp.exception.UserNotFoundException;
 import com.example.Barun.BlogWebApp.model.Blog;
 import com.example.Barun.BlogWebApp.model.User;
 import com.example.Barun.BlogWebApp.repo.BlogRepository;
@@ -20,16 +21,16 @@ public class BlogService {
     @Autowired
     private UserRepository userRepository;
 
-    public Blog createBlog(int userId, Blog blog){
+    public Blog createBlog(int userId, Blog blog) {
         Optional<User> user = userRepository.findById(userId);
-        if(user.isPresent()){
-            blog.setUser(user.get());
+        if (user.isPresent()) {
+            blog.setUser (user.get());
             Blog savedBlog = blogRepository.save(blog);
             System.out.println("Blog created: " + savedBlog);
             return savedBlog;
         } else {
-            System.out.println("User with ID " + userId + " not found");
-            throw new RuntimeException("User not found");
+            System.out.println("User  with ID " + userId + " not found");
+            throw new UserNotFoundException("User  not found");
         }
     }
 
