@@ -1,6 +1,7 @@
 package com.example.Barun.BlogWebApp.controller;
 
 import com.example.Barun.BlogWebApp.model.Blog;
+import com.example.Barun.BlogWebApp.model.BlogRequest;
 import com.example.Barun.BlogWebApp.service.BlogService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -33,12 +34,12 @@ public class BlogController {
     private String uploadDir;
 
     @PostMapping
-    public ResponseEntity<?> createBlog(@Valid @RequestBody Blog blog, @RequestParam int userId, BindingResult result) {
+    public ResponseEntity<?> createBlog(@Valid @RequestBody BlogRequest blogRequest, BindingResult result) {
         if (result.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.getFieldErrors());
         }
         try {
-            Blog createdBlog = blogService.createBlog(userId, blog);
+            Blog createdBlog = blogService.createBlog(blogRequest.getUserId(), blogRequest.getBlog());
             return ResponseEntity.status(HttpStatus.CREATED).body(createdBlog);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
