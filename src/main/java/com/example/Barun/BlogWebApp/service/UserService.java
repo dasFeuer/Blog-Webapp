@@ -119,7 +119,7 @@ public class UserService {
             User user = userOptional.get();
 
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUsername(), password)
+                    new UsernamePasswordAuthenticationToken(usernameOrEmail, password)
             );
             UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
             return jwtService.generateToken(userPrincipal.getUsername());

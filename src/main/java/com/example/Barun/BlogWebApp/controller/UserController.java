@@ -14,7 +14,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -43,9 +45,10 @@ public class UserController {
             User createdUser = userService.createUser(user);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
         } catch (RuntimeException e) {
-            if ("Username already taken".equals(e.getMessage())) {
+            String message = e.getMessage();
+            if ("Username already taken".equals(message)) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already taken");
-            } else if ("Email already taken".equals(e.getMessage())) {
+            } else if ("Email already taken".equals(message)) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already taken");
             } else {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
@@ -54,16 +57,23 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+        System.out.println("Username or Email: " + loginRequest.getUsernameOrEmail());
+        System.out.println("Password: " + loginRequest.getPassword());
         try {
-            String token = userService.authenticateAndGenerateToken(loginRequest.getUsernameOrEmail(), loginRequest.getPassword());
+            String token = userService.authenticateAndGenerateToken(
+                    loginRequest.getUsernameOrEmail(), loginRequest.getPassword());
 
-            response.setHeader("Authorization", "Bearer " + token);
+            Map<String, String> tokenResponse = new HashMap<>();
+            tokenResponse.put("token", token);
 
-            return ResponseEntity.ok(token);
+          response.setHeader("Authorization", "Bearer " + token);
+            return ResponseEntity.ok(tokenResponse);
+
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         } catch (Exception e) {
+            e.printStackTrace(); // Log the exception for debugging
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }
     }
