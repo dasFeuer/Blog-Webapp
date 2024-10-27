@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
@@ -58,8 +59,6 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
-        System.out.println("Username or Email: " + loginRequest.getUsernameOrEmail());
-        System.out.println("Password: " + loginRequest.getPassword());
         try {
             String token = userService.authenticateAndGenerateToken(
                     loginRequest.getUsernameOrEmail(), loginRequest.getPassword());
@@ -67,7 +66,7 @@ public class UserController {
             Map<String, String> tokenResponse = new HashMap<>();
             tokenResponse.put("token", token);
 
-          response.setHeader("Authorization", "Bearer " + token);
+            response.setHeader("Authorization", "Bearer " + token);
             return ResponseEntity.ok(tokenResponse);
 
         } catch (UsernameNotFoundException e) {
@@ -102,6 +101,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable int id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();

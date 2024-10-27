@@ -10,6 +10,9 @@ public class LoginRequest {
     @NotBlank
     private String password;
 
+    public LoginRequest() {
+    }
+
     public LoginRequest(String usernameOrEmail, String password) {
         this.usernameOrEmail = usernameOrEmail;
         this.password = password;
@@ -29,5 +32,10 @@ public class LoginRequest {
 
     public void setPassword(@NotBlank String password) {
         this.password = password;
+    }
+
+    @Override
+    public String toString() {
+        return "LoginRequest{usernameOrEmail='" + usernameOrEmail + "'}";
     }
 }
