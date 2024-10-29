@@ -2,6 +2,7 @@ package com.example.Barun.BlogWebApp.controller;
 
 import com.example.Barun.BlogWebApp.model.LoginRequest;
 import com.example.Barun.BlogWebApp.model.User;
+import com.example.Barun.BlogWebApp.service.JWTService;
 import com.example.Barun.BlogWebApp.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,6 +27,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private JWTService jwtService;
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
@@ -59,21 +63,43 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+        System.out.println("Login: " + loginRequest.getUsernameOrEmail());
+        System.out.println("Password: " + loginRequest.getPassword());
         try {
-            String token = userService.authenticateAndGenerateToken(
+            Map<String, String> tokens = userService.authenticateAndGenerateTokens(
                     loginRequest.getUsernameOrEmail(), loginRequest.getPassword());
 
-            Map<String, String> tokenResponse = new HashMap<>();
-            tokenResponse.put("token", token);
-
-            response.setHeader("Authorization", "Bearer " + token);
-            return ResponseEntity.ok(tokenResponse);
+            response.setHeader("Authorization", "Bearer " + tokens.get("accessToken"));
+            return ResponseEntity.ok(tokens);
 
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         } catch (Exception e) {
             e.printStackTrace(); // Log the exception for debugging
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+        }
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(@RequestParam("refreshToken") String refreshToken) {
+        try {
+            // Validate the refresh token
+            if (jwtService.validateRefreshToken(refreshToken)) {
+                // Get the username from the refresh token and generate a new access token
+                String username = jwtService.extractUsername(refreshToken);
+                String newAccessToken = jwtService.generateAccessToken(username);
+
+                Map<String, String> tokenResponse = new HashMap<>();
+                tokenResponse.put("accessToken", newAccessToken);
+                tokenResponse.put("refreshToken", refreshToken); // Optionally send the same refresh token
+
+                return ResponseEntity.ok(tokenResponse);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired refresh token");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while refreshing token");
         }
     }
 

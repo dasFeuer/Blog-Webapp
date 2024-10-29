@@ -14,7 +14,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -43,44 +45,39 @@ public class UserService {
     @Value("${admin.email}")
     private String adminEmail;
 
-
     @PostConstruct
-    public void initAdminUser(){
-        System.out.println("Initializing admin user");
-        if(!userRepository.findByEmail(adminEmail).isPresent()){
+    public void initAdminUser() {
+        if (!userRepository.findByEmail(adminEmail).isPresent()) {
             User adminUser = new User();
             adminUser.setUsername(adminUsername);
             adminUser.setEmail(adminEmail);
             adminUser.setPassword(passwordEncoder.encode(adminPassword));
             adminUser.setRole(ROLE_ADMIN);
             userRepository.save(adminUser);
-            System.out.println("Admin user created: " + adminUser.getUsername());
-        } else {
-            System.out.println("Admin user already exists");
         }
     }
 
-    public List<User> getAllUsers(){
+    public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    public Optional<User> getUserById(int id){
+    public Optional<User> getUserById(int id) {
         return userRepository.findById(id);
     }
 
-    public boolean isEmailTaken(String email){
+    public boolean isEmailTaken(String email) {
         return userRepository.findByEmail(email).isPresent();
     }
 
-    public boolean isUsernameTaken(String username){
+    public boolean isUsernameTaken(String username) {
         return userRepository.findByUsername(username).isPresent();
     }
 
-    public User createUser(User user){
-        if(isEmailTaken(user.getEmail())) {
+    public User createUser(User user) {
+        if (isEmailTaken(user.getEmail())) {
             throw new RuntimeException("Email already taken");
         }
-        if(isUsernameTaken(user.getUsername())) {
+        if (isUsernameTaken(user.getUsername())) {
             throw new RuntimeException("Username already taken");
         }
         user.setRole(ROLE_USER);
@@ -98,37 +95,43 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public void deleteUser(int id){
+    public void deleteUser(int id) {
         Optional<User> user = userRepository.findById(id);
-        if(user.isPresent()) {
+        if (user.isPresent()) {
             userRepository.deleteById(id);
         } else {
             throw new RuntimeException("User not found");
         }
     }
 
-    public String authenticateAndGenerateToken(String usernameOrEmail, String password){
-        try{
+    public Map<String, String> authenticateAndGenerateTokens(String usernameOrEmail, String password) {
+        try {
             Optional<User> userOptional = userRepository.findByUsername(usernameOrEmail)
                     .or(() -> userRepository.findByEmail(usernameOrEmail));
 
-            if(userOptional.isEmpty()) {
+            if (userOptional.isEmpty()) {
                 throw new UsernameNotFoundException("User not found with username or email: " + usernameOrEmail);
             }
-
-            User user = userOptional.get();
 
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(usernameOrEmail, password)
             );
             UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-            return jwtService.generateToken(userPrincipal.getUsername());
+
+            // Generate both access and refresh tokens
+            String accessToken = jwtService.generateAccessToken(userPrincipal.getUsername());
+            String refreshToken = jwtService.generateRefreshToken(userPrincipal.getUsername());
+
+            Map<String, String> tokens = new HashMap<>();
+            tokens.put("accessToken", accessToken);
+            tokens.put("refreshToken", refreshToken);
+
+            return tokens;
         } catch (UsernameNotFoundException e) {
             throw e;
         } catch (BadCredentialsException e) {
             throw new UsernameNotFoundException("Invalid Credentials");
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("Authentication failed");
         }
     }
