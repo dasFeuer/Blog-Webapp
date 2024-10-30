@@ -19,20 +19,20 @@ public class MyUserDetailsService implements UserDetailsService {
     private UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
-        if (usernameOrEmail == null || usernameOrEmail.trim().isEmpty()) {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        if (username == null || username.trim().isEmpty()) {
             logger.error("Username or email is null or empty");
             throw new UsernameNotFoundException("Username or email cannot be empty");
         }
 
-        logger.info("Attempting to load user: {}", usernameOrEmail);
+        logger.info("Attempting to load user: {}", username);
 
-        return userRepository.findByUsername(usernameOrEmail)
-                .or(() -> userRepository.findByEmail(usernameOrEmail))
+        return userRepository.findByUsername(username)
+                .or(() -> userRepository.findByEmail(username))
                 .map(UserPrincipal::new)
                 .orElseThrow(() -> {
-                    logger.error("User Not Found with username or email: {}", usernameOrEmail);
-                    return new UsernameNotFoundException("User not found with username or email: " + usernameOrEmail);
+                    logger.error("User Not Found with username or email: {}", username);
+                    return new UsernameNotFoundException("User not found with username or email: " + username);
                 });
     }
 }

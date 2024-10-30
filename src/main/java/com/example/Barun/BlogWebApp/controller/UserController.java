@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
@@ -62,15 +63,27 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
-        System.out.println("Login: " + loginRequest.getUsernameOrEmail());
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
+        System.out.println("Login: " + loginRequest.getUsername());
         System.out.println("Password: " + loginRequest.getPassword());
+
         try {
             Map<String, String> tokens = userService.authenticateAndGenerateTokens(
-                    loginRequest.getUsernameOrEmail(), loginRequest.getPassword());
+                    loginRequest.getUsername(), loginRequest.getPassword());
 
-            response.setHeader("Authorization", "Bearer " + tokens.get("accessToken"));
-            return ResponseEntity.ok(tokens);
+            // Retrieve user details
+            User user = userService.getUserByUsername(loginRequest.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", user.getId()); // Assuming User has a getId() method
+            response.put("username", user.getUsername());
+            response.put("email", user.getEmail()); // Assuming User has a getEmail() method
+            response.put("role", user.getRole());
+            response.put("accessToken", tokens.get("accessToken"));
+            response.put("refreshToken", tokens.get("refreshToken")); // Add refresh token if applicable
+
+            return ResponseEntity.ok(response);
 
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");

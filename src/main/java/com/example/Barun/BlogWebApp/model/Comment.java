@@ -1,7 +1,6 @@
 package com.example.Barun.BlogWebApp.model;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -12,11 +11,11 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "blog_id", nullable = false)
     private Blog blog;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -31,6 +30,7 @@ public class Comment {
         this.createdAt = LocalDateTime.now();
     }
 
+    // Getters and Setters
     public int getId() {
         return id;
     }
@@ -67,16 +67,10 @@ public class Comment {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     @Override
     public String toString() {
         return "Comment{" +
                 "id=" + id +
-                ", blog=" + blog +
-                ", user=" + user +
                 ", content='" + content + '\'' +
                 ", createdAt=" + createdAt +
                 '}';

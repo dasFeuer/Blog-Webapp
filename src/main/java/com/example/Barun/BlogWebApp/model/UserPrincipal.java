@@ -33,6 +33,15 @@ public class UserPrincipal implements UserDetails {
         return user.getUsername();
     }
 
+    // Add the new methods to access user ID and email
+    public int getId() {
+        return user.getId(); // Ensure User has a getId() method
+    }
+
+    public String getEmail() {
+        return user.getEmail(); // Ensure User has a getEmail() method
+    }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;

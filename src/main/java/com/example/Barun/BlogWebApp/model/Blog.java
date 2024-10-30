@@ -2,6 +2,8 @@ package com.example.Barun.BlogWebApp.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -19,26 +21,21 @@ public class Blog {
     @Column(nullable = false, length = 5000)
     private String content;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @Column(length = 255)
+    private String summary; // Brief summary of the blog content
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference
-    private User user; // Reference to the User who created the blog
+    private User user;
 
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
 
     // Getters and Setters
     public int getId() {
@@ -65,6 +62,14 @@ public class Blog {
         this.content = content;
     }
 
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
+
     public User getUser() {
         return user;
     }
@@ -80,6 +85,4 @@ public class Blog {
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
-
-
 }

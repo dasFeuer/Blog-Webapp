@@ -10,6 +10,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -47,6 +48,7 @@ public class UserService {
 
     @PostConstruct
     public void initAdminUser() {
+        System.out.println("Initializing admin user");
         if (!userRepository.findByEmail(adminEmail).isPresent()) {
             User adminUser = new User();
             adminUser.setUsername(adminUsername);
@@ -54,9 +56,11 @@ public class UserService {
             adminUser.setPassword(passwordEncoder.encode(adminPassword));
             adminUser.setRole(ROLE_ADMIN);
             userRepository.save(adminUser);
+            System.out.println("Admin user created: " + adminUser.getUsername());
+        } else {
+            System.out.println("Admin user already exists");
         }
     }
-
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
@@ -104,17 +108,17 @@ public class UserService {
         }
     }
 
-    public Map<String, String> authenticateAndGenerateTokens(String usernameOrEmail, String password) {
+    public Map<String, String> authenticateAndGenerateTokens(String username, String password) {
         try {
-            Optional<User> userOptional = userRepository.findByUsername(usernameOrEmail)
-                    .or(() -> userRepository.findByEmail(usernameOrEmail));
+            Optional<User> userOptional = userRepository.findByUsername(username)
+                    .or(() -> userRepository.findByEmail(username));
 
             if (userOptional.isEmpty()) {
-                throw new UsernameNotFoundException("User not found with username or email: " + usernameOrEmail);
+                throw new UsernameNotFoundException("User not found with username or email: " + username);
             }
 
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(usernameOrEmail, password)
+                    new UsernamePasswordAuthenticationToken(username, password)
             );
             UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
@@ -134,5 +138,9 @@ public class UserService {
         } catch (Exception e) {
             throw new RuntimeException("Authentication failed");
         }
+    }
+
+    public Optional<User> getUserByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 }

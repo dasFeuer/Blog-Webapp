@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CommentService {
@@ -24,26 +23,34 @@ public class CommentService {
     @Autowired
     private UserRepository userRepository;
 
-    public Comment createComment(int blogId, int userId, Comment comment){
-        Optional<Blog> blog = blogRepository.findById(blogId);
-        Optional<User> user = userRepository.findById(userId);
+    public Comment createComment(int blogId, int userId, String content) {
+        Blog blog = blogRepository.findById(blogId)
+                .orElseThrow(() -> new RuntimeException("Blog not found with ID: " + blogId));
 
-        if(blog.isPresent() && user.isPresent()){
-            comment.setBlog(blog.get());
-            comment.setUser(user.get());
-            return commentRepository.save(comment);
-        } else {
-            throw new RuntimeException("Blog or User not found");
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User  not found with ID: " + userId));
+
+        // Validate comment content
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("Comment content must not be empty.");
         }
+
+        Comment comment = new Comment();
+        comment.setContent(content);
+        comment.setBlog(blog);
+        comment.setUser (user);
+
+        return commentRepository.save(comment);
     }
 
-    public List<Comment> getAllCommentsByBlogId(int blogId){
+    public List<Comment> getAllCommentsByBlogId(int blogId) {
         return commentRepository.findByBlogId(blogId);
     }
 
-
     public void deleteComment(int commentId) {
+        if (!commentRepository.existsById(commentId)) {
+            throw new RuntimeException("Comment not found with ID: " + commentId);
+        }
         commentRepository.deleteById(commentId);
     }
-
 }
