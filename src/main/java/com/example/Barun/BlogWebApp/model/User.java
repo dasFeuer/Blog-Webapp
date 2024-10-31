@@ -1,5 +1,6 @@
 package com.example.Barun.BlogWebApp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
@@ -8,6 +9,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
 
     @Id
@@ -38,11 +40,12 @@ public class User {
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt =LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
     }
+
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt =LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public int getId() {
@@ -108,5 +111,4 @@ public class User {
     public void setBlogs(List<Blog> blogs) {
         this.blogs = blogs;
     }
-    
 }

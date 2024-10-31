@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/blogs/{blogId}/comments")
+@RequestMapping("/api/blogs/{blogId}/comments")
 public class CommentController {
 
     @Autowired
@@ -24,14 +24,22 @@ public class CommentController {
     }
 
     @PostMapping
-    public ResponseEntity<Comment> createComment(@PathVariable int blogId, @RequestBody CommentRequest commentRequest) {
+    public ResponseEntity<Comment> createComment(@PathVariable int blogId,@RequestBody CommentRequest commentRequest) {
         Comment createdComment = commentService.createComment(blogId, commentRequest.getUserId(), commentRequest.getContent());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
     }
 
+    @PutMapping("/{commentId}")
+    public ResponseEntity<Comment> updateComment(@PathVariable int blogId, @PathVariable int commentId, @RequestBody CommentRequest commentRequest) {
+        Comment updatedComment = commentService.updateComment(blogId, commentId, commentRequest.getContent());
+        return ResponseEntity.ok(updatedComment);
+    }
+
+
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deleteComment(@PathVariable int commentId) {
         commentService.deleteComment(commentId);
+        System.out.println("Comment deleted with ID: " + commentId);
         return ResponseEntity.noContent().build();
     }
 }

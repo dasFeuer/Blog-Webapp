@@ -28,11 +28,4 @@ public class CommentRequest {
         this.userId = userId;
     }
 
-    @Override
-    public String toString() {
-        return "CommentRequest{" +
-                "content='" + content + '\'' +
-                ", userId=" + userId +
-                '}';
-    }
 }

@@ -1,14 +1,18 @@
 package com.example.Barun.BlogWebApp.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "blogs")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Blog {
 
     @Id
@@ -22,7 +26,7 @@ public class Blog {
     private String content;
 
     @Column(length = 255)
-    private String summary; // Brief summary of the blog content
+    private String summary;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id", nullable = false)
@@ -37,7 +41,6 @@ public class Blog {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Getters and Setters
     public int getId() {
         return id;
     }
@@ -82,7 +85,15 @@ public class Blog {
         return createdAt;
     }
 
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

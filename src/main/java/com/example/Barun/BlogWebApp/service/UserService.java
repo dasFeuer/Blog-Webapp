@@ -95,7 +95,6 @@ public class UserService {
 
         user.setUsername(updatedUser.getUsername());
         user.setEmail(updatedUser.getEmail());
-        user.setRole(updatedUser.getRole());
         return userRepository.save(user);
     }
 
