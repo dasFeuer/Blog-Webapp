@@ -1,6 +1,6 @@
 package com.example.Barun.BlogWebApp.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "comments")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+//@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope = Comment.class)
 public class Comment {
 
     @Id
@@ -16,10 +17,13 @@ public class Comment {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)  // Changed to EAGER
     @JoinColumn(name = "blog_id", nullable = false)
+//    @JsonBackReference
     private Blog blog;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)  // Changed to EAGER
     @JoinColumn(name = "user_id", nullable = false)
+//    @JsonBackReference
+    @JsonIncludeProperties({"id", "username", "email", "role"})
     private User user;
 
     @Column(nullable = false, columnDefinition = "TEXT")

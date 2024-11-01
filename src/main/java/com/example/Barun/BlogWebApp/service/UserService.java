@@ -98,14 +98,14 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public void deleteUser(int id) {
-        Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            userRepository.deleteById(id);
-        } else {
-            throw new RuntimeException("User not found");
-        }
-    }
+//    public void deleteUser(int id) {
+//        Optional<User> user = userRepository.findById(id);
+//        if (user.isPresent()) {
+//            userRepository.deleteById(id);
+//        } else {
+//            throw new RuntimeException("User not found");
+//        }
+//    }
 
     public Map<String, String> authenticateAndGenerateTokens(String username, String password) {
         try {
