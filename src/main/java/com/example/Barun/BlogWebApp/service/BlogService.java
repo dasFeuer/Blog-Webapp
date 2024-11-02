@@ -89,10 +89,6 @@ public class BlogService {
         logger.info("Blog with ID {} deleted", id);
     }
 
-    public Page<Blog> getAllBlogs(Pageable pageable) {
-        return blogRepository.findAll(pageable);
-    }
-
     public List<Blog> getBlogsByUsername(String username) {
         return blogRepository.findByUserUsername(username);
     }

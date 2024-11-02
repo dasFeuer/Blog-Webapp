@@ -16,17 +16,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+
 import java.security.Principal;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/blogs")
@@ -36,9 +29,6 @@ public class BlogController {
 
     @Autowired
     private BlogService blogService;
-
-    @Value("${file.upload-dir}")
-    private String uploadDir;
 
     @PostMapping
     public ResponseEntity<?> createBlog(@Valid @RequestBody BlogRequest blogRequest, BindingResult result, Principal principal) {
@@ -117,45 +107,6 @@ public class BlogController {
     public ResponseEntity<List<Blog>> getBlogsByUserId(@PathVariable int id) {
         List<Blog> blogs = blogService.getBlogsByUserId(id);
         return ResponseEntity.ok(blogs);
-    }
-
-    @PostMapping("/upload")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
-        try {
-            String contentType = file.getContentType();
-            if (!isValidContentType(contentType)) {
-                logger.warn("Invalid file type: {}", contentType);
-                return ResponseEntity.badRequest().body("Invalid file type: " + contentType);
-            }
-
-            ensureDirectoryExists(uploadDir);
-
-            String uniqueFileName = UUID.randomUUID().toString() + "_" + sanitizeFilename(file.getOriginalFilename());
-            Path path = Paths.get(uploadDir, uniqueFileName);
-            Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-
-            return ResponseEntity.ok("File uploaded successfully: " + path.toString());
-        } catch (IOException e) {
-            logger.error("Error uploading file: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading file: " + e.getMessage());
-        }
-    }
-
-    private boolean isValidContentType(String contentType) {
-        return contentType != null &&
-                (contentType.equals("image/jpeg") || contentType.equals("image/png") || contentType.equals("image/gif"));
-    }
-
-    private void ensureDirectoryExists(String dir) {
-        File directory = new File(dir);
-        if (!directory.exists() && !directory.mkdirs()) {
-            throw new RuntimeException("Could not create upload directory");
-        }
-    }
-
-    private String sanitizeFilename(String filename) {
-        return filename.replaceAll("[^a-zA-Z0-9._-]", "_");
     }
 
     @GetMapping("/sorted")

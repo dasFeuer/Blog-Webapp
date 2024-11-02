@@ -94,9 +94,7 @@ public class UserController {
     @PostMapping("/refresh-token")
     public ResponseEntity<?> refreshToken(@RequestParam("refreshToken") String refreshToken) {
         try {
-            // Validate the refresh token
             if (jwtService.validateRefreshToken(refreshToken)) {
-                // Get the username from the refresh token and generate a new access token
                 String username = jwtService.extractUsername(refreshToken);
                 String newAccessToken = jwtService.generateAccessToken(username);
 
@@ -136,11 +134,4 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-
-//    @DeleteMapping("/{id}")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<Void> deleteUser(@PathVariable int id) {
-//        userService.deleteUser(id);
-//        return ResponseEntity.noContent().build();
-//    }
 }

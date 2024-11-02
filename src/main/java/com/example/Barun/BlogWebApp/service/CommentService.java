@@ -32,7 +32,6 @@ public class CommentService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User  not found with ID: " + userId));
 
-        // Validate comment content
         if (content == null || content.isBlank()) {
             throw new IllegalArgumentException("Comment content must not be empty.");
         }
@@ -62,16 +61,13 @@ public class CommentService {
             throw new IllegalArgumentException("Comment content must not be empty.");
         }
 
-        // Find the blog to ensure the blogId exists
         Blog blog = blogRepository.findById(blogId)
                 .orElseThrow(() -> new RuntimeException("Blog not found with ID: " + blogId));
 
-        // Find the comment associated with the blog
         Comment comment = commentRepository.findById(commentId)
                 .filter(c -> c.getBlog().getId() == blogId) // Ensure the comment belongs to the blog
                 .orElseThrow(() -> new RuntimeException("Comment not found with ID: " + commentId + " for the specified blog"));
 
-        // Update the comment content
         comment.setContent(content);
         return commentRepository.save(comment);
     }

@@ -98,15 +98,6 @@ public class UserService {
         return userRepository.save(user);
     }
 
-//    public void deleteUser(int id) {
-//        Optional<User> user = userRepository.findById(id);
-//        if (user.isPresent()) {
-//            userRepository.deleteById(id);
-//        } else {
-//            throw new RuntimeException("User not found");
-//        }
-//    }
-
     public Map<String, String> authenticateAndGenerateTokens(String username, String password) {
         try {
             Optional<User> userOptional = userRepository.findByUsername(username)
@@ -121,7 +112,6 @@ public class UserService {
             );
             UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
-            // Generate both access and refresh tokens
             String accessToken = jwtService.generateAccessToken(userPrincipal.getUsername());
             String refreshToken = jwtService.generateRefreshToken(userPrincipal.getUsername());
 
